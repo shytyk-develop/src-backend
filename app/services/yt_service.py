@@ -134,13 +134,6 @@ def download_video(video_url: str, format_id: str) -> str:
     if not format_id:
         raise ValueError("format_id is required")
 
-def download_video(video_url: str, format_id: str) -> str:
-    if not video_url:
-        raise ValueError("video_url is required")
-
-    if not format_id:
-        raise ValueError("format_id is required")
-
     # Prepare cookies file
     cookies_str = os.getenv("YOUTUBE_COOKIES", "")
     cookies_file = None
