@@ -22,6 +22,14 @@ def analyze_video(video_url: str) -> Dict:
     if not video_url:
         raise ValueError("video_url is required")
 
+    # Prepare cookies file
+    cookies_str = os.getenv("YOUTUBE_COOKIES", "")
+    cookies_file = None
+    if cookies_str:
+        cookies_file = "/tmp/youtube_cookies.txt"
+        with open(cookies_file, "w") as f:
+            f.write(cookies_str)
+
     ydl_opts = {
         "quiet": True,
         "skip_download": True,
@@ -33,11 +41,12 @@ def analyze_video(video_url: str) -> Dict:
             "Connection": "keep-alive",
             "Upgrade-Insecure-Requests": "1",
         },
-        # Добавьте cookies для обхода блокировки YouTube
-        # Получите cookies из браузера: https://github.com/yt-dlp/yt-dlp/wiki/Extractors#exporting-youtube-cookies
-        # И вставьте сюда как строку: 'VISITOR_INFO1_LIVE=...; YSC=...; ...'
-        "cookies": os.getenv("YOUTUBE_COOKIES", ""),  # Используйте environment variable
     }
+    if cookies_file:
+        ydl_opts["cookiefile"] = cookies_file
+
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        video_data = ydl.extract_info(video_url, download=False)
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         video_data = ydl.extract_info(video_url, download=False)
@@ -125,7 +134,22 @@ def download_video(video_url: str, format_id: str) -> str:
     if not format_id:
         raise ValueError("format_id is required")
 
-    with yt_dlp.YoutubeDL({
+def download_video(video_url: str, format_id: str) -> str:
+    if not video_url:
+        raise ValueError("video_url is required")
+
+    if not format_id:
+        raise ValueError("format_id is required")
+
+    # Prepare cookies file
+    cookies_str = os.getenv("YOUTUBE_COOKIES", "")
+    cookies_file = None
+    if cookies_str:
+        cookies_file = "/tmp/youtube_cookies.txt"
+        with open(cookies_file, "w") as f:
+            f.write(cookies_str)
+
+    ydl_opts_extract = {
         "quiet": True,
         "http_headers": {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
@@ -135,8 +159,11 @@ def download_video(video_url: str, format_id: str) -> str:
             "Connection": "keep-alive",
             "Upgrade-Insecure-Requests": "1",
         },
-        "cookies": os.getenv("YOUTUBE_COOKIES", ""),
-    }) as ydl:
+    }
+    if cookies_file:
+        ydl_opts_extract["cookiefile"] = cookies_file
+
+    with yt_dlp.YoutubeDL(ydl_opts_extract) as ydl:
         video_data = ydl.extract_info(video_url, download=False)
 
     final_format = format_id
@@ -161,7 +188,9 @@ def download_video(video_url: str, format_id: str) -> str:
             "Connection": "keep-alive",
             "Upgrade-Insecure-Requests": "1",
         },
-        "cookies": os.getenv("YOUTUBE_COOKIES", ""),
+    }
+    if cookies_file:
+        ydl_opts["cookiefile"] = cookies_file
         "progress_hooks": [progress_hook],
         "quiet": True,
     }
