@@ -33,6 +33,10 @@ def analyze_video(video_url: str) -> Dict:
             "Connection": "keep-alive",
             "Upgrade-Insecure-Requests": "1",
         },
+        # Добавьте cookies для обхода блокировки YouTube
+        # Получите cookies из браузера: https://github.com/yt-dlp/yt-dlp/wiki/Extractors#exporting-youtube-cookies
+        # И вставьте сюда как строку: 'VISITOR_INFO1_LIVE=...; YSC=...; ...'
+        "cookies": os.getenv("YOUTUBE_COOKIES", ""),  # Используйте environment variable
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -131,6 +135,7 @@ def download_video(video_url: str, format_id: str) -> str:
             "Connection": "keep-alive",
             "Upgrade-Insecure-Requests": "1",
         },
+        "cookies": os.getenv("YOUTUBE_COOKIES", ""),
     }) as ydl:
         video_data = ydl.extract_info(video_url, download=False)
 
@@ -156,6 +161,7 @@ def download_video(video_url: str, format_id: str) -> str:
             "Connection": "keep-alive",
             "Upgrade-Insecure-Requests": "1",
         },
+        "cookies": os.getenv("YOUTUBE_COOKIES", ""),
         "progress_hooks": [progress_hook],
         "quiet": True,
     }
