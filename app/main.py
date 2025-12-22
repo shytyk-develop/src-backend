@@ -40,6 +40,15 @@ app.mount("/downloads", StaticFiles(directory="app/downloads"), name="downloads"
 
 
 # ======================================================
+# ROOT
+# ======================================================
+
+@app.get("/")
+def root():
+    return {"message": "YouTube Downloader API is running"}
+
+
+# ======================================================
 # ROUTERS
 # ======================================================
 
