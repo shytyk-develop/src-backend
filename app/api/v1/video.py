@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
 import os
+from fastapi.responses import FileResponse
 from app.schemas.video import (
     VideoAnalyzeRequest,
     VideoAnalyzeResponse,
@@ -36,7 +37,6 @@ def analyze_video_endpoint(payload: VideoAnalyzeRequest):
 
 @router.post(
     "/download",
-    response_model=VideoDownloadResponse,
 )
 def download_video_endpoint(payload: VideoDownloadRequest):
     try:
@@ -44,7 +44,7 @@ def download_video_endpoint(payload: VideoDownloadRequest):
             video_url=str(payload.url),
             format_id=payload.format_id,
         )
-        return {"download_url": f"/downloads/{os.path.basename(file_path)}"}
+        return FileResponse(file_path, media_type='application/octet-stream', filename=os.path.basename(file_path))
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:

@@ -9,7 +9,7 @@ from typing import Dict, List
 # ======================================================
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-DOWNLOADS_FOLDER = os.path.join(BASE_DIR, "downloads")
+DOWNLOADS_FOLDER = "/tmp/downloads"  # Использовать /tmp для Vercel serverless
 
 os.makedirs(DOWNLOADS_FOLDER, exist_ok=True)
 

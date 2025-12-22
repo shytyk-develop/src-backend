@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 from app.api.v1.video import router as video_router
 
@@ -36,7 +36,7 @@ app.add_middleware(
 # STATIC FILES
 # ======================================================
 
-app.mount("/downloads", StaticFiles(directory="app/downloads"), name="downloads")
+# Убрано для serverless, файлы возвращаются напрямую
 
 
 # ======================================================
