@@ -351,3 +351,5 @@ def download_video(video_url: str, format_id: str) -> str:
     if not os.path.exists(file_path):
 
         raise FileNotFoundError("Downloaded file not found")
+
+    return file_path
