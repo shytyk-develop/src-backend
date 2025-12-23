@@ -30,6 +30,23 @@ os.makedirs(DOWNLOADS_FOLDER, exist_ok=True)
 
 
 
+def parse_cookies_to_netscape(cookies_str: str) -> str:
+    """Convert cookies string 'name=value; name2=value2' to Netscape format."""
+    if not cookies_str:
+        return ""
+    
+    lines = ["# Netscape HTTP Cookie File"]
+    cookies = [c.strip() for c in cookies_str.split(";") if "=" in c]
+    for cookie in cookies:
+        name, value = cookie.split("=", 1)
+        # Basic Netscape format: domain TRUE/FALSE path secure expiration name value
+        lines.append(f".youtube.com\tTRUE\t/\tTRUE\t0\t{name}\t{value}")
+    return "\n".join(lines)
+
+
+
+
+
 # ======================================================
 
 # АНАЛИЗ ВИДЕО
@@ -43,6 +60,24 @@ def analyze_video(video_url: str) -> Dict:
     if not video_url:
 
         raise ValueError("video_url is required")
+
+
+
+    # Prepare cookies file
+
+    cookies_str = os.getenv("YOUTUBE_COOKIES", "")
+
+    cookies_file = None
+
+    if cookies_str:
+
+        cookies_file = "/tmp/youtube_cookies.txt"
+
+        netscape_cookies = parse_cookies_to_netscape(cookies_str)
+
+        with open(cookies_file, "w") as f:
+
+            f.write(netscape_cookies)
 
 
 
@@ -68,19 +103,11 @@ def analyze_video(video_url: str) -> Dict:
 
         },
 
-
-        # Добавьте cookies для обхода блокировки YouTube
-
-
-        # Получите cookies из браузера: https://github.com/yt-dlp/yt-dlp/wiki/Extractors#exporting-youtube-cookies
-
-
-        # И вставьте сюда как строку: 'VISITOR_INFO1_LIVE=...; YSC=...; ...'
-
-
-        "cookies": os.getenv("YOUTUBE_COOKIES", ""),  # Используйте environment variable
-
     }
+
+    if cookies_file:
+
+        ydl_opts["cookiefile"] = cookies_file
 
 
 
@@ -256,7 +283,25 @@ def download_video(video_url: str, format_id: str) -> str:
 
 
 
-    with yt_dlp.YoutubeDL({
+    # Prepare cookies file
+
+    cookies_str = os.getenv("YOUTUBE_COOKIES", "")
+
+    cookies_file = None
+
+    if cookies_str:
+
+        cookies_file = "/tmp/youtube_cookies.txt"
+
+        netscape_cookies = parse_cookies_to_netscape(cookies_str)
+
+        with open(cookies_file, "w") as f:
+
+            f.write(netscape_cookies)
+
+
+
+    ydl_opts_extract = {
 
         "quiet": True,
 
@@ -276,10 +321,15 @@ def download_video(video_url: str, format_id: str) -> str:
 
         },
 
+    }
 
-        "cookies": os.getenv("YOUTUBE_COOKIES", ""),
+    if cookies_file:
 
-    }) as ydl:
+        ydl_opts_extract["cookiefile"] = cookies_file
+
+
+
+    with yt_dlp.YoutubeDL(ydl_opts_extract) as ydl:
 
         video_data = ydl.extract_info(video_url, download=False)
 
@@ -329,14 +379,15 @@ def download_video(video_url: str, format_id: str) -> str:
 
         },
 
-
-        "cookies": os.getenv("YOUTUBE_COOKIES", ""),
-
         "progress_hooks": [progress_hook],
 
         "quiet": True,
 
     }
+
+    if cookies_file:
+
+        ydl_opts["cookiefile"] = cookies_file
 
 
 
